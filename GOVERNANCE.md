@@ -20,6 +20,7 @@ The Firewall Policy Auditor is a **non-interactive, advisory security validation
 - No connectivity to firewalls, APIs, controllers, automation platforms, or networks.
 - No credential handling, secret storage, or authentication.
 - No modification of the authoritative security ruleset.
+- No operation without an active and functioning LLM.
 
 ### Authority Level
 - **Read-only**: user-provided policies, security ruleset.
@@ -30,12 +31,13 @@ The Firewall Policy Auditor is a **non-interactive, advisory security validation
 ## 2. BEHAVIOR & DECISION MODEL  
 **Automated vs human decisions**
 
-### Automated Decisions
+### Automated Decisions (LLM-dependent)
 - CSV structure and delimiter validation.
 - Mandatory field enforcement.
 - Strict validation of IP, CIDR, protocol, and port syntax.
 - Compliance evaluation against the predefined ruleset.
 - Rule grouping and normalization for advisory output generation.
+- Generation of advisory configuration and automation templates.
 
 ### Human Approval Required
 - Acceptance of compliance results.
@@ -48,11 +50,23 @@ The Firewall Policy Auditor is a **non-interactive, advisory security validation
 - Automatic remediation or silent correction of invalid rules.
 - Partial approval or deployment of non-compliant policies.
 - Acting as a control-plane or management-plane component.
+- Continuing operation when the LLM is unavailable or degraded.
 
 ---
 
 ## 3. FAILURE & DEGRADATION  
 **Scenarios and safe responses**
+
+### LLM Unavailable or Unresponsive (Hard Stop)
+- The agent **must immediately shut down**.
+- No validation, analysis, or artifact generation is performed.
+- No cached logic, fallback rules, heuristics, or partial functionality are allowed.
+- The user is explicitly informed that:
+  - the LLM is unavailable
+  - analysis cannot be performed
+  - no compliance decision can be made
+
+This is a **fail-closed, mandatory shutdown condition**.
 
 ### Ruleset Unavailable or Unverifiable
 - Compliance validation is halted.
@@ -96,6 +110,7 @@ The Firewall Policy Auditor is a **non-interactive, advisory security validation
 - All user input is treated as untrusted until validated.
 - Generated artifacts are explicitly non-authoritative.
 - The agent cannot cross into operational or runtime environments.
+- No trust is placed in outputs generated during degraded or unavailable LLM states (because no outputs are produced).
 
 ### Access Model
 - No read or write access to:
@@ -127,6 +142,7 @@ The Firewall Policy Auditor is a **non-interactive, advisory security validation
 ### Determinism
 - Identical inputs and ruleset versions always produce identical results.
 - No probabilistic or heuristic-based decisions.
+- No outputs exist when the LLM is unavailable.
 
 ---
 
@@ -138,56 +154,4 @@ The Firewall Policy Auditor is a **non-interactive, advisory security validation
 - Each analysis records the exact ruleset version used.
 - Backward compatibility is not assumed.
 
-### Agent Logic Changes
-- Require:
-  - Unit tests for syntax validation
-  - Regression tests for compliance outcomes
-- Behavioral changes must be intentional and documented.
-
-### Rollback
-- Performed by reverting agent logic or ruleset version.
-- Advisory outputs always reference the version used.
-
----
-
-## 7. OPERATIONAL OWNERSHIP  
-**Ownership, escalation, kill switch**
-
-### Primary Owner
-- Network Security Architecture / Firewall Governance team.
-
-### Stakeholders
-- Network Operations
-- Security Engineering
-- Risk and Compliance
-
-### Kill Switch Authority
-- Security Architecture Lead or delegated authority.
-
-### Kill Switch Effects
-- Compliance evaluation disabled.
-- Configuration and Ansible generation disabled.
-- Format-only validation remains available.
-
----
-
-## 8. KAF MAPPING TABLE  
-**Governance alignment**
-
-| Governance Section        | KAF Component                |
-|--------------------------|------------------------------|
-| Agent Role Model         | Identity & Authority         |
-| Behavior & Decision Model| Decision Control             |
-| Failure & Degradation    | Safety & Resilience          |
-| Trust Boundaries         | Trust Enforcement            |
-| Explainability & Audit   | Transparency & Traceability |
-| Change & Evolution       | Lifecycle Governance         |
-| Operational Ownership    | Accountability               |
-| End-to-End Design        | Governance by Design         |
-
----
-
-**Classification:** Internal – Security Governance  
-**Execution Authority:** Human-only  
-**Automation Scope:** Advisory output only  
-**Production Access:** Explicitly prohibited
+###
