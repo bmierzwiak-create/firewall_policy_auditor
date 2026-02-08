@@ -1,0 +1,4 @@
+Firewall policies rules:
+1. Fields: src_ip, dst_ip, protocol, and port cannot be empty and cannot contain "any" statement. Those fileds needs to containt defined IP or protocol and port values.
+2. Source or destination IP addresses which have a subnet mask broader than /23 are not allowed and are violating security policy.
+3. Public IP addresses and private IP addresses, defined as source or destination fields, cannot be part of the same single firewall rule. Source and destination part can be either private IP addresses or public IP addresses.
